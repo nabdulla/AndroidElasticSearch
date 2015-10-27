@@ -9,6 +9,8 @@ import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.AdapterView.OnItemLongClickListener;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.Toast;
 import ca.ualberta.ssrg.androidelasticsearch.R;
@@ -24,6 +26,9 @@ public class MainActivity extends Activity {
 	private ArrayAdapter<Movie> moviesViewAdapter;
 	private ESMovieManager movieManager;
 	private MoviesController moviesController;
+	private Button saveButton;
+	private EditText editText;
+	private String text;
 
 	private Context mContext = this;
 
@@ -33,6 +38,19 @@ public class MainActivity extends Activity {
 		setContentView(R.layout.activity_main);
 
 		movieList = (ListView) findViewById(R.id.movieList);
+		saveButton = (Button) findViewById(R.id.button1);
+		editText = (EditText) findViewById(R.id.editText1);
+
+		saveButton.setOnClickListener(new View.OnClickListener() {
+			@Override
+			public void onClick(View view) {
+				setResult(RESULT_OK);
+				String text = editText.getText().toString();
+				SearchThread thread = new SearchThread(text);
+				thread.start();
+
+			}
+		});
 	}
 
 	@Override
@@ -75,8 +93,10 @@ public class MainActivity extends Activity {
 	protected void onResume() {
 		super.onResume();
 		
-		
 
+		SearchThread thread = new SearchThread("*");
+
+		thread.start();
 		// Refresh the list when visible
 		// TODO: Search all
 		
@@ -104,8 +124,9 @@ public class MainActivity extends Activity {
 		movies.clear();
 
 		// TODO: Extract search query from text view
-		
+		text = editText.getText().toString();
 		// TODO: Run the search thread
+		SearchThread thread = new SearchThread(text);
 		
 	}
 	
@@ -132,6 +153,18 @@ public class MainActivity extends Activity {
 
 	class SearchThread extends Thread {
 		// TODO: Implement search thread
+		private String search;
+
+		public SearchThread(String search){
+			this.search = search;
+		}
+
+		@Override
+		public void run(){
+			movies.clear();
+			movies.addAll(movieManager.searchMovies(search, null));
+			notifyUpdated();
+		}
 		
 	}
 
